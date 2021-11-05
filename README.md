@@ -1,2 +1,2 @@
 # cld-commands
-creating commands in java cld
+creating commands in java clI
