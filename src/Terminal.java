@@ -1,14 +1,13 @@
-import java.lang.reflect.Array;
-import java.util.Arrays;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Objects;
+import java.util.Scanner;
 
 class Parser {
     String commandName;
     String[] args;
-    int argSize;
-    Parser(){
-        commandName = "";
-        args = new String[100];
-    }
 
     //This method will divide the input into commandName and args
     //where "input" is the string command entered by the user
@@ -24,11 +23,12 @@ class Parser {
                 commandName += tokens[1];
                 i = 2;
             }
+
+            args = new String[tokens.length - i];
             for (j = 0; i < tokens.length; i++) {
                 args[j] = tokens[i];
                 j++;
             }
-            argSize = j;
 
             return true;
         }
@@ -38,33 +38,108 @@ class Parser {
         return commandName;
     }
     public String[] getArgs(){
-            return Arrays.copyOfRange(args, 0, argSize);  // return the elements of the array and ignores the null
-
+            return args ;
     }
 }
 
 
 public class Terminal {
     Parser parser;
+    Path currentPath;
     Terminal(){
         parser = new Parser();
-    }
+        currentPath = Paths.get("").toAbsolutePath();
+    } // constructor
     public void run(String input){
-
         parser.parse(input);
-        System.out.println(parser.getCommandName());
-        System.out.println(Arrays.toString(parser.getArgs()));
+    }
+
+    public void updateCurrentPath(Path path){
+        currentPath = path;
+    }
+
+    public String  pwd() {
+        return currentPath.toString();
+    }
+
+    public void cd(String[] args){
+        try {
+            if(args.length == 0){
+                String homeDir = System.getProperty( "user.home" );
+                Path home = Paths.get(homeDir);
+                updateCurrentPath(home);
+            }
+            else if(args.length == 1){
+                Path resolvedPath;
+                try {
+                    resolvedPath = currentPath.resolve(args[0]).toRealPath();
+                    if(resolvedPath.toFile().isFile()){
+                        throw new IOException();
+                    }
+                    updateCurrentPath(resolvedPath);
+                } catch (IOException e) {
+                    System.out.println("Not a directory");
+                }
+
+            }
+            else {
+                System.out.println("Too many arguments");
+            }
+        }
+        catch (NullPointerException ignored){
+
+        }
 
     }
-    //Implement each command in a method, for example:
-  //  public String pwd(){...}
-    //public void cd(String[] args){...}
-    // ...
-//This method will choose the suitable command method to be called
-    //public void chooseCommandAction(){...}
+
+    public void ls(){
+        String[] pathNames;
+        File f = new File(String.valueOf(currentPath));
+        pathNames = f.list();
+        for (int i =0; i < pathNames.length; i++) {
+            System.out.println(pathNames[i]);
+        }
+
+    }
+    public void lsReverse(){
+        String[] pathNames;
+        File f = new File(String.valueOf(currentPath));
+        pathNames = f.list();
+        for (int i =pathNames.length - 1; i >= 0; i--) {
+            System.out.println(pathNames[i]);
+        }
+
+    }
+    public void exit(){
+        System.exit(0);
+    }
+
+
+    public void chooseCommandAction(){
+        switch (parser.getCommandName()) {
+            case "pwd" -> System.out.println(pwd());
+            case "cd" -> {
+                cd(parser.getArgs());
+                System.out.println(currentPath);
+            }
+            case "ls" -> ls();
+            case "ls-r" -> lsReverse();
+            case "exit" -> exit();
+        }
+
+    } //This method will choose the suitable command method to be called
+
+    // main function
     public static void main(String[] args){
         Terminal terminal = new Terminal();
-        terminal.run("cd -r hello world");
+        Scanner sc = new Scanner(System.in);
+        String input = " ";
+        while(input.length() != 0){
+            input = sc.nextLine();
+            terminal.run(input);
+            terminal.chooseCommandAction();
+        }
+
 
 
     }
