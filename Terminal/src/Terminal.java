@@ -63,7 +63,7 @@ public class Terminal {
 
     Terminal() {
         this.parser = new Parser();
-        //parser = new Parser();
+       // parser = new Parser();
         currentPath = Paths.get("").toAbsolutePath();
     } // constructor
 
@@ -226,29 +226,38 @@ public class Terminal {
         switch (parser.getCommandName()) {
             case "pwd":
                 System.out.println(pwd());
+                break;
             case "cd": {
                 cd(parser.getArgs());
                 System.out.println(currentPath);
+                break;
             }
             case "ls":
                 ls();
+                break;
             case "ls-r":
                 lsReverse();
+                break;
 
             case "mkdir":
                  mkdir();
+                 break;
             case "cp":
                 cp();
+                break;
 
             case "cp-r":
                 cpReverse();
+                break;
 
             case "rm":
                 rm();
+                break;
 
             case "exit":
 
                 exit();
+                break;
                 
             default :
                 System.out.println( "WRONG COMMAND ! TRY AGAIN");
@@ -272,7 +281,7 @@ public class Terminal {
 
     }
 
-    String mkdir() throws IOException {
+  /*  String mkdir() throws IOException {
 
         Terminal t = new Terminal();
         int size = parser.getArgs().length;
@@ -312,6 +321,6 @@ public class Terminal {
             in = t.rm(parser.args[i]) + in;
         }
         return in;
-    }
+    }*/
 
 }
