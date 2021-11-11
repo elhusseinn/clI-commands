@@ -117,14 +117,22 @@ public class Terminal {
 
     public void chooseCommandAction(){
         switch (parser.getCommandName()) {
-            case "pwd" -> System.out.println(pwd());
-            case "cd" -> {
+            case "pwd":
+                System.out.println(pwd());
+                break;
+            case "cd":
                 cd(parser.getArgs());
                 System.out.println(currentPath);
-            }
-            case "ls" -> ls();
-            case "ls-r" -> lsReverse();
-            case "exit" -> exit();
+                break;
+            case "ls":
+                ls();
+                break;
+            case "ls-r":
+                lsReverse();
+                break;
+            case "exit":
+                exit();
+                break;
         }
 
     } //This method will choose the suitable command method to be called
@@ -135,6 +143,7 @@ public class Terminal {
         Scanner sc = new Scanner(System.in);
         String input = " ";
         while(input.length() != 0){
+            System.out.print('>');
             input = sc.nextLine();
             terminal.run(input);
             terminal.chooseCommandAction();
