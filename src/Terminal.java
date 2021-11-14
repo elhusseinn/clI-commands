@@ -340,6 +340,7 @@ public class Terminal {
         Scanner sc = new Scanner(System.in);
         String input = " ";
         while (input.length() != 0) {
+            System.out.print('>');
             input = sc.nextLine();
             terminal.run(input);
             terminal.chooseCommandAction();
