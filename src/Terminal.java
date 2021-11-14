@@ -174,6 +174,7 @@ public class Terminal {
         file.setLastModified(timestamp);
     }
 
+
     public String cp(String src, String des) throws FileNotFoundException, IOException {
 
         if (!src.contains(":") && !src.equals("")) {
@@ -201,9 +202,11 @@ public class Terminal {
         in.close();
 
         out.close();
+        System.out.println("File copied successfully");
 
         return "";
     }
+
 
     public String cpReverse(String src, String des) throws IOException {
 
@@ -240,6 +243,7 @@ public class Terminal {
         }
         return "";
     }
+
 
     public String rm(String file) throws IOException {
 
