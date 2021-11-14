@@ -1,8 +1,10 @@
 
 import java.io.*;
-
 import java.nio.file.*;
 
+//import java.nio.file.Files;
+//import java.nio.file.Path;
+//import java.nio.file.Paths;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -264,22 +266,35 @@ public class Terminal {
         return "";
     }
 
-    public String rm(String file) {
+    public String rm(String file) throws IOException {
 
-        if (!file.contains(":") && !file.equals("")) {
-            file = currentDirectory + file + "\\";
+        //if( )
+        String ff = System.getProperty("user.dir") + "\\" + file;
+        File f = new File( ff);
+
+
+//        String homeDir = System.getProperty("user.home");
+//                Path home = Paths.get(homeDir);
+//                updateCurrentPath(home);
+//        Path resolvedPath;
+//                try {
+//                    resolvedPath = currentPath.resolve(file).toRealPath();
+//                    if (resolvedPath.toFile().isFile()) {
+//                        throw new IOException();
+//                    }
+//                    updateCurrentPath(resolvedPath);
+//                } catch (IOException e) {
+//                    System.out.println("Not a directory");
+//                }
+
+
+
+        if(f.delete()){
+            System.out.println(f.getName() +" is deleted!");
+        }else{
+            System.out.println("Operation failed!");
         }
 
-        File f = new File(file);
-
-        if (f.isDirectory()) {
-            File[] ds = f.listFiles();
-            for (File d : ds) {
-                rm(d.toString());
-            }
-        }
-
-        f.delete();
         return "";
     }
 
