@@ -1,10 +1,5 @@
-
 import java.io.*;
 import java.nio.file.*;
-
-//import java.nio.file.Files;
-//import java.nio.file.Path;
-//import java.nio.file.Paths;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,7 +53,6 @@ public class Terminal {
 
     Terminal() {
         this.parser = new Parser();
-        // parser = new Parser();
         currentPath = Paths.get("").toAbsolutePath();
     } // constructor
 
@@ -94,25 +88,6 @@ public class Terminal {
 
         return "";
     }
-//    private void copyFile(File src, File des) throws IOException {
-//
-//        InputStream in = new FileInputStream(src);
-//
-//        OutputStream out = new FileOutputStream(des);
-//
-//        int size;
-//
-//        byte[] st = new byte[1024];
-//
-//        while ((size = in.read(st)) > 0) {
-//
-//            out.write(st, 0, size);
-//        }
-//
-//        in.close();
-//
-//        out.close();
-//    }
 
     public void echo(String[] args) {
         System.out.println(args.toString());
@@ -271,24 +246,6 @@ public class Terminal {
         //if( )
         String ff = currentPath.toString() + "\\" + file;
         File f = new File( ff);
-
-
-//        String homeDir = System.getProperty("user.home");
-//                Path home = Paths.get(homeDir);
-//                updateCurrentPath(home);
-//        Path resolvedPath;
-//                try {
-//                    resolvedPath = currentPath.resolve(file).toRealPath();
-//                    if (resolvedPath.toFile().isFile()) {
-//                        throw new IOException();
-//                    }
-//                    updateCurrentPath(resolvedPath);
-//                } catch (IOException e) {
-//                    System.out.println("Not a directory");
-//                }
-
-
-
         if(f.delete()){
             System.out.println(f.getName() +" is deleted!");
         }else{
@@ -384,46 +341,4 @@ public class Terminal {
         }
 
     }
-
-    /*  String mkdir() throws IOException {
-
-        Terminal t = new Terminal();
-        int size = parser.getArgs().length;
-        String in = "";
-        for (int i = 0; i < size - 1; i++) {
-            in = t.mkdir(parser.args[i]) + in;
-        }
-        return in;
-    }
-
-    String cp() throws IOException {
-        Terminal t = new Terminal();
-        int size = parser.getArgs().length;
-        String in = "";
-        for (int i = 0; i < size - 1; i++) {
-            in = t.cp(parser.args[i], parser.args[size - 1]) + in;
-        }
-        return in;
-    }
-
-    String cpReverse() throws IOException {
-        Terminal t = new Terminal();
-        int size = parser.getArgs().length;
-        String in = "";
-        for (int i = 0; i < size - 1; i++) {
-            in = t.cpReverse(parser.args[i], parser.args[size - 1]) + in;
-        }
-        return in;
-    }
-
-    String rm() throws IOException {
-
-        Terminal t = new Terminal();
-        int size = parser.getArgs().length;
-        String in = "";
-        for (int i = 0; i < size - 1; i++) {
-            in = t.rm(parser.args[i]) + in;
-        }
-        return in;
-    }*/
 }
