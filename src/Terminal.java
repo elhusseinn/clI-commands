@@ -14,7 +14,7 @@ class Parser {
     public boolean parse(String input){
 
         if(input != null) {
-            String[] tokens = input.split(" ");
+            String[] tokens = input.split(" (?=(([^'\"]*['\"]){2})*[^'\"]*$)");
             commandName = tokens[0];
 
             int i = 1, j;
@@ -26,7 +26,8 @@ class Parser {
 
             args = new String[tokens.length - i];
             for (j = 0; i < tokens.length; i++) {
-                args[j] = tokens[i];
+               String s = tokens[i].replaceAll("\"", "");
+                args[j] = s;
                 j++;
             }
 
