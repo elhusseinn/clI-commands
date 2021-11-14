@@ -269,7 +269,7 @@ public class Terminal {
     public String rm(String file) throws IOException {
 
         //if( )
-        String ff = System.getProperty("user.dir") + "\\" + file;
+        String ff = currentPath.toString() + "\\" + file;
         File f = new File( ff);
 
 
