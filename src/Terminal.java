@@ -11,10 +11,10 @@ class Parser {
 
     //This method will divide the input into commandName and args
     //where "input" is the string command entered by the user
-    public boolean parse(String input) {
+    public boolean parse(String input){
 
-        if (input != null) {
-            String[] tokens = input.split(" ");
+        if(input != null) {
+            String[] tokens = input.split(" (?=(([^'\"]*['\"]){2})*[^'\"]*$)");
             commandName = tokens[0];
 
             int i = 1, j;
@@ -26,7 +26,8 @@ class Parser {
 
             args = new String[tokens.length - i];
             for (j = 0; i < tokens.length; i++) {
-                args[j] = tokens[i];
+                String s = tokens[i].replaceAll("\"", "");
+                args[j] = s;
                 j++;
             }
 
