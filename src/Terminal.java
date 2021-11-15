@@ -176,7 +176,7 @@ public class Terminal {
     }
 
 
-    public String cp(String src, String des) throws FileNotFoundException, IOException {
+   /* public String cp(String src, String des) throws FileNotFoundException, IOException {
 
         if (!src.contains(":") && !src.equals("")) {
             src = currentDirectory + src + "\\";
@@ -206,7 +206,16 @@ public class Terminal {
         System.out.println("File copied successfully");
 
         return "";
-    }
+    }*/
+   public void cp(String src, String des) throws IOException {
+       Path sourceDirectory = Paths.get(src);
+       Path targetDirectory = Paths.get(des);
+
+       //copy source to target using Files Class
+       Files.copy(sourceDirectory, targetDirectory,StandardCopyOption.REPLACE_EXISTING);
+       System.out.println("File copied successfully");
+
+   }
 
 
     public String cpReverse(String src, String des) throws IOException {
