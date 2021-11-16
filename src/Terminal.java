@@ -3,6 +3,7 @@ import java.nio.file.*;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 class Parser {
 
@@ -210,15 +211,13 @@ public class Terminal {
    public void cp(String src, String des) throws IOException {
        Path sourceDirectory = Paths.get(src);
        Path targetDirectory = Paths.get(des);
-
-       //copy source to target using Files Class
        Files.copy(sourceDirectory, targetDirectory,StandardCopyOption.REPLACE_EXISTING);
        System.out.println("File copied successfully");
 
    }
 
 
-    public String cpReverse(String src, String des) throws IOException {
+    /*public String cpReverse(String src, String des) throws IOException {
 
 //        Path source = Paths.get(src);
 //        Path destination = Paths.get(des);
@@ -252,8 +251,64 @@ public class Terminal {
             out.close();
         }
         return "";
-    }
+    }*/
+    public static void copyDirectoryJavaNIO(Path source, Path target) throws IOException {
 
+        // is this a directory?
+        if (Files.isDirectory(source)) {
+
+            //if target directory exist?
+            if (Files.notExists(target)) {
+                // create it
+                Files.createDirectories(target);
+                System.out.println("Directory created : " + target);
+            }
+
+            // list all files or folders from the source, Java 1.8, returns a stream
+            // doc said need try-with-resources, auto-close stream
+            try (Stream<Path> paths = Files.list(source)) {
+
+                // recursive loop
+                paths.forEach(p ->
+                        copyDirectoryJavaNIOWrapper(
+                                p, target.resolve(source.relativize(p)))
+                );
+
+            }
+
+        } else {
+            // if file exists, replace it
+            Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+           /* System.out.println(
+                    String.format("Copy File from \t'%s' to \t'%s'", source, target)
+            );*/
+        }
+    }
+    public static void copyDirectoryJavaNIOWrapper(Path source, Path target) {
+
+        try {
+            copyDirectoryJavaNIO(source, target);
+        } catch (IOException e) {
+            System.err.println("IO errors : " + e.getMessage());
+        }
+
+    }
+    public void cpReverse(String src, String des) throws IOException {
+
+        String fromDirectory = src;
+        String toToDirectory = des;
+
+        try {
+
+            copyDirectoryJavaNIO(Paths.get(fromDirectory),
+                    Paths.get(toToDirectory));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("Directory copied");
+    }
 
     public String rm(String file) throws IOException {
 
