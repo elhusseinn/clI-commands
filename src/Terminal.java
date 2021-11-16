@@ -10,8 +10,6 @@ class Parser {
     String commandName;
     String[] args;
 
-    //This method will divide the input into commandName and args
-    //where "input" is the string command entered by the user
     public boolean parse(String input){
 
         if(input != null) {
@@ -56,7 +54,7 @@ public class Terminal {
     Terminal() {
         this.parser = new Parser();
         currentPath = Paths.get("").toAbsolutePath();
-    } // constructor
+    }
 
     public void run(String input) {
         parser.parse(input);
@@ -177,37 +175,6 @@ public class Terminal {
     }
 
 
-   /* public String cp(String src, String des) throws FileNotFoundException, IOException {
-
-        if (!src.contains(":") && !src.equals("")) {
-            src = currentDirectory + src + "\\";
-        }
-        if (!des.contains(":") && !des.equals("")) {
-            des = currentDirectory + des + "\\";
-        }
-        File source = new File(src);
-        File destination = new File(des);
-
-        InputStream in = new FileInputStream(source);
-
-        OutputStream out = new FileOutputStream(destination);
-
-        int size;
-
-        byte[] st = new byte[1024];
-
-        while ((size = in.read(st)) > 0) {
-
-            out.write(st, 0, size);
-        }
-
-        in.close();
-
-        out.close();
-        System.out.println("File copied successfully");
-
-        return "";
-    }*/
    public void cp(String src, String des) throws IOException {
        Path sourceDirectory = Paths.get(src);
        Path targetDirectory = Paths.get(des);
@@ -217,77 +184,26 @@ public class Terminal {
    }
 
 
-    /*public String cpReverse(String src, String des) throws IOException {
+    public static void copyDirectory(Path source, Path target) throws IOException {
 
-//        Path source = Paths.get(src);
-//        Path destination = Paths.get(des);
-        File source = new File(src);
-        File destination = new File(des);
-        //FileUtils.copyDirectory(source, destination);
-        if (source.isDirectory()) {
-            if (!destination.exists()) {
-                destination.mkdir();
-            }
-            String[] f = source.list();
-            for (int i = 0; i < f.length; i++) {
-                cpReverse(src, des);
-            }
-        } else {
-            InputStream in = new FileInputStream(source);
-
-            OutputStream out = new FileOutputStream(destination);
-
-            int size;
-
-            byte[] st = new byte[1024];
-
-            while ((size = in.read(st)) > 0) {
-
-                out.write(st, 0, size);
-            }
-
-            in.close();
-
-            out.close();
-        }
-        return "";
-    }*/
-    public static void copyDirectoryJavaNIO(Path source, Path target) throws IOException {
-
-        // is this a directory?
         if (Files.isDirectory(source)) {
-
-            //if target directory exist?
             if (Files.notExists(target)) {
-                // create it
                 Files.createDirectories(target);
                 System.out.println("Directory created : " + target);
             }
 
-            // list all files or folders from the source, Java 1.8, returns a stream
-            // doc said need try-with-resources, auto-close stream
             try (Stream<Path> paths = Files.list(source)) {
-
-                // recursive loop
-                paths.forEach(p ->
-                        copyDirectoryJavaNIOWrapper(
-                                p, target.resolve(source.relativize(p)))
-                );
-
+                paths.forEach(p -> copyDirectoryWrapper(p, target.resolve(source.relativize(p))));
             }
 
         } else {
-            // if file exists, replace it
             Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
-           /* System.out.println(
-                    String.format("Copy File from \t'%s' to \t'%s'", source, target)
-            );*/
         }
     }
-    public static void copyDirectoryJavaNIOWrapper(Path source, Path target) {
+    public static void copyDirectoryWrapper(Path source, Path target) {
 
         try {
-            copyDirectoryJavaNIO(source, target);
+            copyDirectory(source, target);
         } catch (IOException e) {
             System.err.println("IO errors : " + e.getMessage());
         }
@@ -300,7 +216,7 @@ public class Terminal {
 
         try {
 
-            copyDirectoryJavaNIO(Paths.get(fromDirectory),
+            copyDirectory(Paths.get(fromDirectory),
                     Paths.get(toToDirectory));
 
         } catch (IOException e) {
@@ -310,9 +226,8 @@ public class Terminal {
         System.out.println("Directory copied");
     }
 
-    public String rm(String file) throws IOException {
+    public void rm(String file) throws IOException {
 
-        //if( )
         String ff = currentPath.toString() + "\\" + file;
         File f = new File( ff);
         if(f.delete()){
@@ -321,7 +236,6 @@ public class Terminal {
             System.out.println("Operation failed!");
         }
 
-        return "";
     }
 
     public String cat(String[] paths) throws IOException {
