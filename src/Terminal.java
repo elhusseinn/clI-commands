@@ -64,33 +64,9 @@ public class Terminal {
         currentPath = path;
     }
 
-    public void newFile(String des) {
-        try {
-            File f = new File(des);
-            f.createNewFile();
-        } catch (IOException ex) {
-            System.out.println("ERROR!");
-            Logger.getLogger(Terminal.class.getName()).log(Level.SEVERE, null, ex);
-        }
 
-    }
-
-    private static String check(String Path) throws IOException {
-        Path currentDirect = Paths.get(currentDirectory);
-        Path pathGiven = Paths.get(Path);
-        String handledPath = currentDirect.resolve(pathGiven).toFile().getCanonicalPath();
-
-        if (Files.exists(Paths.get(handledPath))) {
-            return handledPath;
-        } else if (Files.exists(Paths.get(handledPath.substring(0, handledPath.lastIndexOf("\\"))))) {
-            return handledPath;
-        }
-
-        return "";
-    }
-
-    public void echo(String[] args) {
-        System.out.println(args.toString());
+    public void echo(String args) {
+        System.out.println(args);
     }
 
     public String pwd() {
@@ -144,20 +120,25 @@ public class Terminal {
 
     }
 
-    public String mkdir(String file) {
-        File f = new File(file);
-        if (!f.exists()) {
-            if (f.mkdir()) {
-                System.out.println("File Created !");
-            } else {
-                System.out.println("File is not Created !");
-            }
+    public void mkdir(String[] file) {
 
-        } else {
-            System.out.println("There is already a directory with the same name");
+        for (int i = 0; i < file.length; i++) {
+
+            File f = new File(currentPath.toString() + "\\" + file[i]);
+            if (f.exists()) {
+                System.out.println("File is not Created !");
+
+                System.out.println("There is already a directory with the same name");
+
+            } else {
+                for (int j = i; j <= i; j++) {
+                    f.mkdir();
+
+                    System.out.println(" File Created !");
+                }
+            }
         }
 
-        return "";
     }
 
     public static void touch(String str) throws IOException {
@@ -184,46 +165,47 @@ public class Terminal {
    }
 
 
-    public static void copyDirectory(Path source, Path target) throws IOException {
+    public static void copyDir(Path source, Path destination) throws IOException {
 
         if (Files.isDirectory(source)) {
-            if (Files.notExists(target)) {
-                Files.createDirectories(target);
-                System.out.println("Directory created : " + target);
+            if (!Files.exists(destination)) {
+                Files.createDirectories(destination);
+                System.out.println("Directory is created : " + destination);
             }
 
             try (Stream<Path> paths = Files.list(source)) {
-                paths.forEach(p -> copyDirectoryWrapper(p, target.resolve(source.relativize(p))));
+                paths.forEach(p -> copyDirWrapper(p, destination.resolve(source.relativize(p))));
             }
 
         } else {
-            Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(source, destination, StandardCopyOption.REPLACE_EXISTING);
         }
     }
-    public static void copyDirectoryWrapper(Path source, Path target) {
+
+    public static void copyDirWrapper(Path source, Path destination) {
 
         try {
-            copyDirectory(source, target);
+            copyDir(source, destination);
         } catch (IOException e) {
-            System.err.println("IO errors : " + e.getMessage());
+            System.err.println(e.getMessage());
         }
 
     }
+
     public void cpReverse(String src, String des) throws IOException {
 
-        String fromDirectory = src;
-        String toToDirectory = des;
+        String source = src;
+        String destination = des;
 
         try {
 
-            copyDirectory(Paths.get(fromDirectory),
-                    Paths.get(toToDirectory));
+            copyDir(Paths.get(source), Paths.get(destination));
 
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        System.out.println("Directory copied");
+        System.out.println("Directory is copied !");
     }
 
     public void rm(String file) throws IOException {
@@ -238,18 +220,20 @@ public class Terminal {
 
     }
 
-    public String cat(String[] paths) throws IOException {
-        StringBuilder builder = new StringBuilder();
-        for (String path : paths) {
-            Scanner input = new Scanner(new File(check(path)));
+    public void cat(String[] paths) throws IOException
+    {
 
+        StringBuilder str = new StringBuilder();
+        for (String path : paths) {
+
+            Scanner input = new Scanner(new File(currentPath.toString() + "\\" + path));
             while (input.hasNextLine()) {
                 String line = input.nextLine();
-                builder.append(line);
-                System.out.println(line);
+                str.append(line);
+
             }
         }
-        return builder.toString();
+        System.out.println(str.toString());
     }
 
     public void exit() {
@@ -259,7 +243,7 @@ public class Terminal {
     public void chooseCommandAction() throws IOException {
         switch (parser.getCommandName()) {
             case "echo":
-                echo(parser.getArgs());
+                echo(parser.getArgs()[0]);
                 break;
             case "pwd":
                 System.out.println(pwd());
@@ -277,7 +261,7 @@ public class Terminal {
                 break;
 
             case "mkdir":
-                mkdir(parser.getArgs()[0]);
+                mkdir(parser.getArgs());
                 break;
 
             case "touch":
