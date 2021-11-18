@@ -49,8 +49,6 @@ public class Terminal {
     Parser parser;
     Path currentPath;
 
-    public static String currentDirectory = "C:\\Users\\" + System.getProperty("user.name") + "\\";
-
     Terminal() {
         this.parser = new Parser();
         currentPath = Paths.get("").toAbsolutePath();
@@ -99,6 +97,27 @@ public class Terminal {
         }
 
     }
+    public void rmdir(String path) {
+        try {
+            if(path.equals("*")){
+                File targetFile = new File(currentPath.toString());
+                File [] fileList = targetFile.listFiles();
+                    for(File file:fileList){
+                        if(file.isDirectory()){
+                            file.delete();
+                        }
+                    }
+            }
+            else {
+                File dir = new File(String.valueOf(currentPath.resolve(path)));
+                 dir.delete();
+            }
+
+        } catch (Exception e) {
+            e.getStackTrace();
+        }
+    }
+
 
     public void ls() {
         String[] pathNames;
@@ -124,21 +143,27 @@ public class Terminal {
 
         for (int i = 0; i < file.length; i++) {
 
-            File f = new File(currentPath.toString() + "\\" + file[i]);
-            if (f.exists()) {
-                System.out.println("File is not Created !");
-
-                System.out.println("There is already a directory with the same name");
-
+            if (file[i].contains(":")) {
+                File newFile = new File(file[i]);
+                newFile.mkdir();
             } else {
-                for (int j = i; j <= i; j++) {
+
+                File f = new File(currentPath.toString() + "\\" + file[i]);
+                if (f.exists()) {
+                    System.out.println("File is not Created !");
+
+                    System.out.println("There is already a directory with the same name");
+
+                } else {
+
                     f.mkdir();
 
                     System.out.println(" File Created !");
+
                 }
             }
-        }
 
+        }
     }
 
     public static void touch(String str) throws IOException {
@@ -285,6 +310,9 @@ public class Terminal {
             case "exit":
 
                 exit();
+                break;
+            case "rmdir":
+                rmdir(parser.getArgs()[0]);
                 break;
 
             default:
