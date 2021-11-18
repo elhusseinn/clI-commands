@@ -166,10 +166,16 @@ public class Terminal {
         }
     }
 
-    public static void touch(String str) throws IOException {
+    public void touch(String str) throws IOException {
         long timestamp = System.currentTimeMillis();
-        File file = new File(str);
-        touch(file, timestamp);
+        if(str.contains(":")) {
+            File f = new File(str);
+            touch(f, timestamp);
+        } else {
+            File f = new File(currentPath.toString() + "\\" + str);
+            touch(f, timestamp);
+        }
+
     }
 
     public static void touch(File file, long timestamp) throws IOException {
