@@ -1,30 +1,19 @@
-
 import java.io.*;
-//import java.io.File;
-//import java.io.FileInputStream;
-//import java.io.FileNotFoundException;
-//import java.io.FileOutputStream;
-//import java.io.IOException;
-//import java.io.InputStream;
-//import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 class Parser {
 
     String commandName;
     String[] args;
 
-    //This method will divide the input into commandName and args
-    //where "input" is the string command entered by the user
-    public boolean parse(String input) {
+    public boolean parse(String input){
 
-        if (input != null) {
-            String[] tokens = input.split(" ");
+        if(input != null) {
+            String[] tokens = input.split(" (?=(([^'\"]*['\"]){2})*[^'\"]*$)");
             commandName = tokens[0];
 
             int i = 1, j;
@@ -36,7 +25,8 @@ class Parser {
 
             args = new String[tokens.length - i];
             for (j = 0; i < tokens.length; i++) {
-                args[j] = tokens[i];
+                String s = tokens[i].replaceAll("\"", "");
+                args[j] = s;
                 j++;
             }
 
@@ -59,13 +49,10 @@ public class Terminal {
     Parser parser;
     Path currentPath;
 
-    String currentDirectory = "C:\\Users\\" + System.getProperty("user.name") + "\\";
-
     Terminal() {
         this.parser = new Parser();
-       // parser = new Parser();
         currentPath = Paths.get("").toAbsolutePath();
-    } // constructor
+    }
 
     public void run(String input) {
         parser.parse(input);
@@ -75,40 +62,9 @@ public class Terminal {
         currentPath = path;
     }
 
-    public void newFile(String des) {
-        try {
-            File f = new File(des);
-            f.createNewFile();
-        } catch (IOException ex) {
-            System.out.println("ERROR!");
-            Logger.getLogger(Terminal.class.getName()).log(Level.SEVERE, null, ex);
-        }
 
-    }
-
-    /**
-     * private void check(String file){
-     *
-     * }
-     */
-    private void copyFile(File src, File des) throws IOException {
-
-        InputStream in = new FileInputStream(src);
-
-        OutputStream out = new FileOutputStream(des);
-
-        int size;
-
-        byte[] st = new byte[1024];
-
-        while ((size = in.read(st)) > 0) {
-
-            out.write(st, 0, size);
-        }
-
-        in.close();
-
-        out.close();
+    public void echo(String args) {
+        System.out.println(args);
     }
 
     public String pwd() {
@@ -141,6 +97,27 @@ public class Terminal {
         }
 
     }
+    public void rmdir(String path) {
+        try {
+            if(path.equals("*")){
+                File targetFile = new File(currentPath.toString());
+                File [] fileList = targetFile.listFiles();
+                    for(File file:fileList){
+                        if(file.isDirectory()){
+                            file.delete();
+                        }
+                    }
+            }
+            else {
+                File dir = new File(String.valueOf(currentPath.resolve(path)));
+                 dir.delete();
+            }
+
+        } catch (Exception e) {
+            e.getStackTrace();
+        }
+    }
+
 
     public void ls() {
         String[] pathNames;
@@ -162,60 +139,132 @@ public class Terminal {
 
     }
 
-    public String mkdir(String file) {
-        File f = new File(file);
-        if (!f.exists()) {
-            f.mkdir();
+    public void mkdir(String[] file) {
+
+        for (int i = 0; i < file.length; i++) {
+
+            if (file[i].contains(":")) {
+                File newFile = new File(file[i]);
+                newFile.mkdir();
+            } else {
+
+                File f = new File(currentPath.toString() + "\\" + file[i]);
+                if (f.exists()) {
+                    System.out.println("File is not Created !");
+
+                    System.out.println("There is already a directory with the same name");
+
+                } else {
+
+                    f.mkdir();
+
+                    System.out.println(" File Created !");
+
+                }
+            }
+
+        }
+    }
+
+    public void touch(String str) throws IOException {
+        long timestamp = System.currentTimeMillis();
+        if(str.contains(":")) {
+            File f = new File(str);
+            touch(f, timestamp);
         } else {
-            System.out.println("There is already a directory with the same name");
+            File f = new File(currentPath.toString() + "\\" + str);
+            touch(f, timestamp);
         }
 
-        return "";
     }
 
-    public String cp(String src, String des) throws FileNotFoundException, IOException {
-
-        if (!src.contains(":") && !src.equals("")) {
-            src = currentDirectory + src + "\\";
+    public static void touch(File file, long timestamp) throws IOException {
+        if (!file.exists()) {
+            new FileOutputStream(file).close();
         }
-        if (!des.contains(":") && !des.equals("")) {
-            des = currentDirectory + des + "\\";
-        }
-        File source = new File(src);
-        File destination = new File(des);
-        copyFile(source, destination);
 
-        return "";
+        file.setLastModified(timestamp);
     }
-    
-    public String cpReverse(String src, String des) throws IOException{
-        File source = new File(src);
-        File destination = new File(des);
-        if(source.isDirectory()){
-            if(!destination.exists()){
-                destination.mkdir();
+
+
+   public void cp(String src, String des) throws IOException {
+       Path sourceDirectory = Paths.get(src);
+       Path targetDirectory = Paths.get(des);
+       Files.copy(sourceDirectory, targetDirectory,StandardCopyOption.REPLACE_EXISTING);
+       System.out.println("File copied successfully");
+
+   }
+
+
+    public static void copyDir(Path source, Path destination) throws IOException {
+
+        if (Files.isDirectory(source)) {
+            if (!Files.exists(destination)) {
+                Files.createDirectories(destination);
+                System.out.println("Directory is created : " + destination);
             }
-            String[] f = source.list();
-            for(int i =0 ; i<f.length ;i++){
-                cpReverse(src,des);
+
+            try (Stream<Path> paths = Files.list(source)) {
+                paths.forEach(p -> copyDirWrapper(p, destination.resolve(source.relativize(p))));
             }
+
+        } else {
+            Files.copy(source, destination, StandardCopyOption.REPLACE_EXISTING);
+        }
+    }
+
+    public static void copyDirWrapper(Path source, Path destination) {
+
+        try {
+            copyDir(source, destination);
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+        }
+
+    }
+
+    public void cpReverse(String src, String des) throws IOException {
+
+        String source = src;
+        String destination = des;
+
+        try {
+
+            copyDir(Paths.get(source), Paths.get(destination));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("Directory is copied !");
+    }
+
+    public void rm(String file) throws IOException {
+
+        String ff = currentPath.toString() + "\\" + file;
+        File f = new File( ff);
+        if(f.delete()){
+            System.out.println(f.getName() +" is deleted!");
         }else{
-            copyFile(source,destination);
+            System.out.println("Operation failed!");
         }
-        return "";
+
     }
 
-    public String rm(String file) {
+    public void cat(String[] paths) throws IOException
+    {
 
-        File f = new File(file);
-        if (!f.isFile()) {
-            System.out.println(file + " is not a file");
-        }
-        if (f.delete()) {
-            System.out.println(f.getName() + " is deleted");
-        }
+        StringBuilder str = new StringBuilder();
+        for (String path : paths) {
 
-        return "";
+            Scanner input = new Scanner(new File(currentPath.toString() + "\\" + path));
+            while (input.hasNextLine()) {
+                String line = input.nextLine();
+                str.append(line);
+
+            }
+        }
+        System.out.println(str.toString());
     }
 
     public void exit() {
@@ -224,6 +273,9 @@ public class Terminal {
 
     public void chooseCommandAction() throws IOException {
         switch (parser.getCommandName()) {
+            case "echo":
+                echo(parser.getArgs()[0]);
+                break;
             case "pwd":
                 System.out.println(pwd());
                 break;
@@ -240,28 +292,38 @@ public class Terminal {
                 break;
 
             case "mkdir":
-                 mkdir();
-                 break;
+                mkdir(parser.getArgs());
+                break;
+
+            case "touch":
+                touch(parser.getArgs()[0]);
+                break;
             case "cp":
-                cp();
+                cp(parser.getArgs()[0], parser.getArgs()[1]);
                 break;
 
             case "cp-r":
-                cpReverse();
+                cpReverse(parser.getArgs()[0], parser.getArgs()[1]);
                 break;
 
             case "rm":
-                rm();
+                rm(parser.getArgs()[0]);
+                break;
+            case "cat":
+                cat(parser.getArgs());
                 break;
 
             case "exit":
 
                 exit();
                 break;
-                
-            default :
-                System.out.println( "WRONG COMMAND ! TRY AGAIN");
-                
+            case "rmdir":
+                rmdir(parser.getArgs()[0]);
+                break;
+
+            default:
+                System.out.println("WRONG COMMAND ! TRY AGAIN");
+
         }
 
     } //This method will choose the suitable command method to be called
@@ -274,53 +336,11 @@ public class Terminal {
         Scanner sc = new Scanner(System.in);
         String input = " ";
         while (input.length() != 0) {
+            System.out.print('>');
             input = sc.nextLine();
             terminal.run(input);
             terminal.chooseCommandAction();
         }
 
     }
-
-  /*  String mkdir() throws IOException {
-
-        Terminal t = new Terminal();
-        int size = parser.getArgs().length;
-        String in = "";
-        for (int i = 0; i < size - 1; i++) {
-            in = t.mkdir(parser.args[i]) + in;
-        }
-        return in;
-    }
-
-    String cp() throws IOException {
-        Terminal t = new Terminal();
-        int size = parser.getArgs().length;
-        String in = "";
-        for (int i = 0; i < size - 1; i++) {
-            in = t.cp(parser.args[i], parser.args[size - 1]) + in;
-        }
-        return in;
-    }
-    
-    String cpReverse() throws IOException {
-        Terminal t = new Terminal();
-        int size = parser.getArgs().length;
-        String in = "";
-        for (int i = 0; i < size - 1; i++) {
-            in = t.cpReverse(parser.args[i], parser.args[size - 1]) + in;
-        }
-        return in;
-    }
-
-    String rm() throws IOException {
-
-        Terminal t = new Terminal();
-        int size = parser.getArgs().length;
-        String in = "";
-        for (int i = 0; i < size - 1; i++) {
-            in = t.rm(parser.args[i]) + in;
-        }
-        return in;
-    }*/
-
 }
